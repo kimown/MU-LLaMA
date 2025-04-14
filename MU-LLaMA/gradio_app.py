@@ -12,6 +12,21 @@ import llama
 from util.misc import *
 from data.utils import load_and_transform_audio_data
 
+
+
+from fastapi import FastAPI,Request, Response
+import httpx
+import random
+import time
+import uvicorn
+
+app = FastAPI()
+
+
+auth_uri=''
+
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--model", default="./ckpts/checkpoint.pth", type=str,
@@ -168,10 +183,36 @@ description = """
 # MU-LLaMA🎧
 """
 
-with gr.Blocks(theme=gr.themes.Default(), css="#pointpath {height: 10em} .label {height: 3em}") as demo:
-    gr.Markdown(description)
-    create_imagebind_llm_demo()
 
-if __name__ == "__main__":
-    demo.queue(api_open=True, concurrency_count=1).launch(share=False, inbrowser=True, server_name='0.0.0.0',
-                                                          server_port=24000, debug=True)
+def getDemo244():
+    with gr.Blocks(theme=gr.themes.Default(), css="#pointpath {height: 10em} .label {height: 3em}") as demo:
+        gr.Markdown(description)
+        create_imagebind_llm_demo()
+    return demo
+
+
+
+    
+
+@app.get('/')
+async def balabala2(request: Request):
+    global auth_uri
+    if request.headers['rpc-persist-path']:
+        auth_uri = request.headers['rpc-persist-path'].split('/')[1]
+        print(auth_uri)
+        await initPath(auth_uri)
+    return {"auth_uri1111": (auth_uri)}
+
+
+
+async def initPath(auth_uri):
+    import gradio as gr
+    demo244 = getDemo244()
+    global app
+    demo244.queue()
+    demo244.startup_events()
+    path1 = f'/{auth_uri}/{auth_uri}'
+    print(path1)
+    app = gr.mount_gradio_app(app, demo244, path1)
+
+uvicorn.run(app, host=["::"], port=8888)
